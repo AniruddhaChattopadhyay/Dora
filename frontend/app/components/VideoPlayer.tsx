@@ -16,24 +16,23 @@ export default function VideoPlayer({ videoFile, timestamps }: Props) {
   };
 
   return (
-    <>
+    <div className="flex flex-col items-center w-full">
       <video
         ref={ref}
         src={URL.createObjectURL(videoFile)}
         controls
-        className="w-full rounded shadow"
+        className="w-full rounded-xl shadow-lg border border-gray-200"
       />
-
-      <h2 className="mt-4 font-medium">Appearances</h2>
+      <h2 className="mt-6 font-semibold text-lg text-gray-700">Appearances</h2>
       {timestamps.length === 0 ? (
-        <p>Face not found 🤷‍♂️</p>
+        <p className="text-gray-400 mt-2">Face not found <span className="text-xl">🤷‍♂️</span></p>
       ) : (
-        <ul className="flex flex-wrap gap-2">
+        <ul className="flex flex-wrap gap-3 mt-3">
           {timestamps.map(([start, end], i) => (
             <li key={i}>
               <button
                 onClick={() => jump(start)}
-                className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full shadow border border-blue-200 hover:bg-blue-100 focus:ring-2 focus:ring-blue-300 transition-all text-sm font-medium"
               >
                 {start.toFixed(1)}s - {end.toFixed(1)}s
               </button>
@@ -41,6 +40,6 @@ export default function VideoPlayer({ videoFile, timestamps }: Props) {
           ))}
         </ul>
       )}
-    </>
+    </div>
   );
 }

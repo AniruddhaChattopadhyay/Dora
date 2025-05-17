@@ -28,28 +28,31 @@ export default function Home() {
   }, [jobId]);
 
   return (
-    <main className="mx-auto max-w-xl p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Find-Me MVP</h1>
-
-      {!jobId && (
-        <UploadForm
-          onStart={(id, video) => {
-            setJobId(id);
-            setStatus("queued");
-            setVideo(video);
-          }}
-        />
-      )}
-
-      {status && status !== "done" && (
-        <p className="italic">
-          Status: <span className="font-medium">{status}</span>
-        </p>
-      )}
-
-      {status === "done" && videoFile && (
-        <VideoPlayer videoFile={videoFile} timestamps={timestamps} />
-      )}
+    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-blue-100 font-sans">
+      <div className="w-full max-w-xl p-8 bg-white rounded-2xl shadow-xl flex flex-col items-center">
+        <span className="text-4xl mb-2">🔎</span>
+        <h1 className="text-3xl font-bold mb-2 tracking-tight text-gray-800">Find-Me MVP</h1>
+        <p className="mb-6 text-gray-500 text-center">Find appearances of a face in your video.</p>
+        {!jobId && (
+          <UploadForm
+            onStart={(id, video) => {
+              setJobId(id);
+              setStatus("queued");
+              setVideo(video);
+            }}
+          />
+        )}
+        {status && status !== "done" && (
+          <div className="w-full flex flex-col items-center mt-4">
+            <span className="italic text-blue-700 bg-blue-100 px-3 py-1 rounded-full">Status: <span className="font-medium">{status}</span></span>
+          </div>
+        )}
+        {status === "done" && videoFile && (
+          <div className="w-full mt-6">
+            <VideoPlayer videoFile={videoFile} timestamps={timestamps} />
+          </div>
+        )}
+      </div>
     </main>
   );
 }
