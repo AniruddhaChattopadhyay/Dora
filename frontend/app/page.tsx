@@ -1,58 +1,40 @@
 "use client";
-import { useState, useEffect } from "react";
-import UploadForm from "@/app/components/UploadForm";
-import VideoPlayer from "@/app/components/VideoPlayer";
-import { fetchJob, JobStatus } from "@/app/lib/api";
+import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
+import Image from "next/image";
 
-export default function Home() {
-  const [jobId, setJobId]       = useState<string | null>(null);
-  const [status, setStatus]     = useState<JobStatus | null>(null);
-  const [timestamps, setTs]     = useState<[number, number][]>([]);
-  const [videoFile, setVideo]   = useState<File | null>(null);
-
-  /* ─ poll every second when a job starts ─ */
-  useEffect(() => {
-    if (!jobId) return;
-
-    const iv = setInterval(async () => {
-      const { status, appearances = [] } = await fetchJob(jobId);
-      console.log("status", status);
-      setStatus(status);
-      if (status === "done") {
-        setTs(appearances);
-        clearInterval(iv);
-      }
-    }, 1000);
-
-    return () => clearInterval(iv);
-  }, [jobId]);
-
+export default function Landing() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-blue-100 font-sans">
-      <div className="w-full max-w-xl p-8 bg-white rounded-2xl shadow-xl flex flex-col items-center">
-        <span className="text-4xl mb-2">🔎</span>
-        <h1 className="text-3xl font-bold mb-2 tracking-tight text-gray-800">Find-Me MVP</h1>
-        <p className="mb-6 text-gray-500 text-center">Find appearances of a face in your video.</p>
-        {!jobId && (
-          <UploadForm
-            onStart={(id, video) => {
-              setJobId(id);
-              setStatus("queued");
-              setVideo(video);
-            }}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 flex flex-col">
+      <nav className="flex justify-between items-center p-6">
+        <span className="text-2xl font-bold tracking-tight flex items-center gap-2">
+          <Sparkles className="w-7 h-7 text-blue-500" />
+          DORA : Find Faces in Videos
+        </span>
+        <Button asChild size="lg" className="px-6 py-2 text-base font-semibold">
+          <a href="/app">Explore</a>
+        </Button>
+      </nav>
+      <main className="flex flex-1 flex-col items-center justify-center">
+        <div className="flex flex-col items-center">
+          <Image
+            src="https://illustrations.popsy.co/gray/face-scan.svg"
+            alt="Face scan illustration"
+            width={256}
+            height={256}
+            className="w-64 mb-8 drop-shadow-lg"
           />
-        )}
-        {status && status !== "done" && (
-          <div className="w-full flex flex-col items-center mt-4">
-            <span className="italic text-blue-700 bg-blue-100 px-3 py-1 rounded-full">Status: <span className="font-medium">{status}</span></span>
-          </div>
-        )}
-        {status === "done" && videoFile && (
-          <div className="w-full mt-6">
-            <VideoPlayer videoFile={videoFile} timestamps={timestamps} />
-          </div>
-        )}
-      </div>
-    </main>
+          <h1 className="text-5xl font-bold mb-4 text-gray-900 text-center">
+            Find Faces in Your Videos
+          </h1>
+          <p className="text-lg text-gray-600 mb-8 max-w-xl text-center">
+            Upload a video and a reference photo to detect appearances of a face. Fast, private, and easy to use.
+          </p>
+          <Button asChild size="lg" className="px-8 py-4 text-lg font-semibold shadow-lg">
+            <a href="/app">Get Started</a>
+          </Button>
+        </div>
+      </main>
+    </div>
   );
 }

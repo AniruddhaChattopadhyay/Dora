@@ -1,31 +1,29 @@
 import axios from "axios";
 
-const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = "http://localhost:8000"; // Adjust if your backend runs on a different port
 
-export type JobStatus = "queued" | "processing" | "done" | "failed";
-
-export interface JobResponse {
+export interface JobStatus {
   id: string;
-  status: JobStatus;
+  status: string;
   appearances?: [number, number][];
 }
 
 /* ---------- create a job ---------- */
-export async function createJob(video: File, face: File): Promise<JobResponse> {
-  const form = new FormData();
-  form.append("video", video);
-  form.append("face", face);
+export const startJob = async (video: File, face: File): Promise<JobStatus> => {
+  const formData = new FormData();
+  formData.append("video", video);
+  formData.append("face", face);
 
-  const { data } = await axios.post<JobResponse>(
-    `${base}/jobs`,
-    form,
-    { headers: { "Content-Type": "multipart/form-data" } }
-  );
-  return data;
-}
+  const response = await axios.post(`${API_URL}/jobs/`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
 
 /* ---------- poll a job ---------- */
-export async function fetchJob(id: string): Promise<JobResponse> {
-  const { data } = await axios.get<JobResponse>(`${base}/jobs/${id}`);
-  return data;
-}
+export const fetchJob = async (jobId: string): Promise<JobStatus> => {
+  const response = await axios.get(`${API_URL}/jobs/${jobId}`);
+  return response.data;
+};
