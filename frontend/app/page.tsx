@@ -1,8 +1,34 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Shield, Zap, Lock } from "lucide-react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useEffect, useState } from "react";
+import { User } from "@supabase/supabase-js";
+import { UserMenu } from "@/components/user-menu";
 
 export default function Landing() {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClientComponentClient();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setLoading(false);
+    };
+
+    getUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase.auth]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 flex flex-col">
       <nav className="flex justify-between items-center p-6">
@@ -10,9 +36,15 @@ export default function Landing() {
           <Sparkles className="w-7 h-7 text-blue-500" />
           DORA : Find Faces in Videos
         </span>
-        <Button asChild size="lg" className="px-6 py-2 text-base font-semibold">
-          <a href="/app">Explore</a>
-        </Button>
+        {loading ? (
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500" />
+        ) : user ? (
+          <UserMenu />
+        ) : (
+          <Button asChild size="lg" className="px-6 py-2 text-base font-semibold">
+            <a href="/login">Sign In</a>
+          </Button>
+        )}
       </nav>
       <main className="flex-1">
         {/* Hero Section */}
@@ -36,7 +68,7 @@ export default function Landing() {
               Instantly locate specific faces in your video content. Upload a video and a reference photo to detect appearances with our advanced AI technology. Fast, private, and incredibly easy to use.
             </p>
             <Button asChild size="lg" className="px-8 py-4 text-lg font-semibold shadow-lg">
-              <a href="/app">Get Started</a>
+              <a href={user ? "/app" : "/login"}>Get Started</a>
             </Button>
           </div>
         </section>
@@ -83,7 +115,7 @@ export default function Landing() {
               Join thousands of users who trust DORA for their video analysis needs
             </p>
             <Button asChild size="lg" className="px-8 py-4 text-lg font-semibold shadow-lg">
-              <a href="/app">Start Free Trial</a>
+              <a href={user ? "/app" : "/login"}>{user ? "Go to App" : "Start Free Trial"}</a>
             </Button>
           </div>
         </section>
