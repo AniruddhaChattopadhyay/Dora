@@ -1,18 +1,48 @@
 # tasks.py
-import face_recognition
-import cv2
 import json
 import redis
 from celery_app import celery_app
 import logging
+import os
+from supabase import create_client, Client
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+# Initialize Supabase client
+supabase: Client = create_client(
+    os.getenv("SUPABASE_URL", ""), os.getenv("SUPABASE_SERVICE_KEY", "")
+)
 
 
-@celery_app.task(name="tasks.find_me")
-def find_me(job_id, video_path, face_path, stride_ms=300):
+# def validate_video(video_path):
+#     """Validate video file and return video object if valid."""
+#     if not os.path.exists(video_path):
+#         raise FileNotFoundError(f"Video file not found: {video_path}")
+
+#     vid = cv2.VideoCapture(video_path)
+#     if not vid.isOpened():
+#         raise ValueError(f"Could not open video file: {video_path}")
+
+#     # Try to read first frame to ensure video is valid
+#     ret, frame = vid.read()
+#     if not ret or frame is None:
+#         vid.release()
+#         raise ValueError(f"Could not read frames from video: {video_path}")
+
+#     # Reset video to beginning
+#     vid.set(cv2.CAP_PROP_POS_FRAMES, 0)
+#     return vid
+
+print("hehe")
+@celery_app.task(name="tasks.find_me", bind=True, max_retries=3)
+def find_me(self, job_id, video_path, face_path, stride_ms=300):
+    import face_recognition
+    import cv2
+
     logger.info(f"Starting face detection task for job {job_id}")
     logger.info(f"Processing video: {video_path}")
     logger.info(f"Reference face: {face_path}")
@@ -96,7 +126,6 @@ def find_me(job_id, video_path, face_path, stride_ms=300):
         logger.info(
             f"Face still visible at end of video (last seen at {end_time:.2f}s)"
         )
-
     # 3️⃣ save JSON to Redis / DB
     logger.info(f"Processing complete. Found {len(appearances)} continuous appearances")
     logger.info(f"Appearances: {appearances}")
@@ -108,6 +137,12 @@ def find_me(job_id, video_path, face_path, stride_ms=300):
     )
     logger.info(f"Results saved to Redis for job {job_id}")
 
+    # Update database
+    supabase.table("jobs").update(
+        {"status": "done", "appearances": appearances}
+    ).eq("id", job_id).execute()
+
     # Cleanup
     vid.release()
     logger.info("Task completed successfully")
+       
