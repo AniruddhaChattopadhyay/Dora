@@ -7,7 +7,7 @@ import { createSupabaseServerClient } from '@/app/utils/server';
 export async function POST(request: Request) {
   try {
     // const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
-    const supabase = createSupabaseServerClient();
+    const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
