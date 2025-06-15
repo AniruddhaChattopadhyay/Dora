@@ -40,10 +40,13 @@ async def create_job(
     face: UploadFile = File(...),
     job_id: str = Form(...),
     user_id: str = Form(...),
+    video_url: str = Form(...),
+    face_url: str = Form(...),
 ):
     tmp_video = f"/tmp/{job_id}.mp4"
     tmp_face = f"/tmp/{job_id}.jpg"
-
+    logger.info(f"Video URL: {video_url}")
+    logger.info(f"Face URL: {face_url}")
     logger.info(f"Starting processing for job {job_id} (user: {user_id})")
     logger.info(f"Saving video to {tmp_video}")
     logger.info(f"Saving face to {tmp_face}")
@@ -56,7 +59,7 @@ async def create_job(
     # Initialize job status in Redis
     r.hset(f"job:{job_id}", mapping={"status": "processing"})
 
-    celery_app.send_task("tasks.find_me", args=[job_id, tmp_video, tmp_face])
+    celery_app.send_task("tasks.find_me", args=[job_id, tmp_video, tmp_face, video_url, face_url])
     return {"id": job_id, "status": "processing"}
 
 

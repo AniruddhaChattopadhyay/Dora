@@ -39,7 +39,7 @@ supabase: Client = create_client(
 
 print("hehe")
 @celery_app.task(name="tasks.find_me", bind=True, max_retries=3)
-def find_me(self, job_id, video_path, face_path, stride_ms=300):
+def find_me(self, job_id, video_path, face_path, video_url, face_url, stride_ms=300):
     import face_recognition
     import cv2
 
