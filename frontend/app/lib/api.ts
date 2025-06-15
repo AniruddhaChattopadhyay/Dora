@@ -1,5 +1,5 @@
 import axios from "axios";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createBrowserClient } from "@supabase/ssr";
 
 const API_URL = "http://localhost:8000"; // Backend API URL
 const NEXT_API_URL = "/api"; // Next.js API routes
@@ -10,6 +10,8 @@ export interface JobStatus {
   status: string;
   videoName?: string;
   faceName?: string;
+  videoUrl?: string;
+  faceUrl?: string;
   appearances?: [number, number][];
   createdAt: Date;
   updatedAt: Date;
@@ -17,7 +19,10 @@ export interface JobStatus {
 
 // Create an axios instance with auth header
 const createAuthenticatedClient = async () => {
-  const supabase = createClientComponentClient();
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
   const { data: { session } } = await supabase.auth.getSession();
   
   if (!session?.access_token) {
@@ -32,8 +37,11 @@ const createAuthenticatedClient = async () => {
 };
 
 /* ---------- create a job ---------- */
-export const startJob = async (video: File, face: File): Promise<JobStatus> => {
-  const supabase = createClientComponentClient();
+export const startJob = async (video: File, face: File, videoUrl: string, faceUrl: string): Promise<JobStatus> => {
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
   const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) {
@@ -44,6 +52,8 @@ export const startJob = async (video: File, face: File): Promise<JobStatus> => {
   const formData = new FormData();
   formData.append("video", video);
   formData.append("face", face);
+  formData.append("videoUrl", videoUrl);
+  formData.append("faceUrl", faceUrl);
 
   const response = await fetch(`${NEXT_API_URL}/jobs`, {
     method: 'POST',
@@ -61,6 +71,8 @@ export const startJob = async (video: File, face: File): Promise<JobStatus> => {
   const backendFormData = new FormData();
   backendFormData.append("video", video);
   backendFormData.append("face", face);
+  backendFormData.append("video_url", videoUrl);
+  backendFormData.append("face_url", faceUrl);
   backendFormData.append("job_id", job.id);
   backendFormData.append("user_id", user.id);
 

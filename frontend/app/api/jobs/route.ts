@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+// import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+// import { cookies } from 'next/headers';
 import { createSupabaseServerClient } from '@/app/utils/server';
 
 export async function POST(request: Request) {
@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     // const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
-    
+    console.log('user', user);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -17,9 +17,14 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const video = formData.get('video') as File;
     const face = formData.get('face') as File;
+    const videoUrl = formData.get('videoUrl') as string;
+    const faceUrl = formData.get('faceUrl') as string;
 
-    if (!video || !face) {
-      return NextResponse.json({ error: 'Video and face files are required' }, { status: 400 });
+    if (!video || !face || !videoUrl || !faceUrl) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
     }
 
     const job = await prisma.job.create({
@@ -27,7 +32,9 @@ export async function POST(request: Request) {
         userId: user.id,
         status: 'queued',
         videoName: video.name,
-        faceName: face.name
+        faceName: face.name,
+        videoUrl: videoUrl,
+        faceUrl: faceUrl
       }
     });
 
@@ -42,10 +49,9 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    const cookieStore = cookies();
-    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
-    
+    console.log('user', user);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

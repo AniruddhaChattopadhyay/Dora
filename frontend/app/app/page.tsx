@@ -11,7 +11,9 @@ export default function AppPage() {
   const [status, setStatus] = useState<string | null>(null);
   const [timestamps, setTs] = useState<[number, number][]>([]);
   const [videoFile, setVideo] = useState<File | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [referencePhoto, setReferencePhoto] = useState<File | null>(null);
+  const [faceUrl, setFaceUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!jobId) return;
@@ -40,17 +42,23 @@ export default function AppPage() {
           <p className="mb-6 text-gray-500 text-center">Upload a video and a reference photo to detect faces.</p>
           {!jobId && (
             <div className="w-full flex flex-col md:flex-row gap-4 mb-6">
-              <UploadVideo onUpload={(file) => setVideo(file)} />
-              <UploadReference onUpload={(file) => setReferencePhoto(file)} />
+              <UploadVideo onUpload={(file, url) => {
+                setVideo(file);
+                setVideoUrl(url);
+              }} />
+              <UploadReference onUpload={(file, url) => {
+                setReferencePhoto(file);
+                setFaceUrl(url);
+              }} />
             </div>
           )}
           {!jobId && (
             <button
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               onClick={async () => {
-                if (videoFile && referencePhoto) {
+                if (videoFile && referencePhoto && videoUrl && faceUrl) {
                   try {
-                    const result = await startJob(videoFile, referencePhoto);
+                    const result = await startJob(videoFile, referencePhoto, videoUrl, faceUrl);
                     setJobId(result.id);
                     setStatus(result.status);
                   } catch (error) {

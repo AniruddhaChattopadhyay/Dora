@@ -20,6 +20,8 @@ model Job {
   status      String   @default("queued")
   videoName   String?  @map("video_name")
   faceName    String?  @map("face_name")
+  videoUrl    String?  // URL to the video in Azure Blob Storage
+  faceUrl     String?  // URL to the face image in Azure Blob Storage
   appearances Json?
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
