@@ -1,13 +1,14 @@
 # main.py
-from fastapi import FastAPI, File, HTTPException, UploadFile, Form
+import asyncio
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 import redis
 from celery_app import celery_app
 import logging
 import json
-from typing import Optional, List
+from typing import Optional, List, cast
 from pydantic import BaseModel
-from datetime import datetime
+import httpx
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -48,25 +49,38 @@ async def create_job(
     logger.info(f"Video URL: {video_url}")
     logger.info(f"Face URL: {face_url}")
     logger.info(f"Starting processing for job {job_id} (user: {user_id})")
-    logger.info(f"Saving video to {tmp_video}")
-    logger.info(f"Saving face to {tmp_face}")
+    logger.info(f"Downloading video from {video_url} to {tmp_video}")
+    logger.info(f"Downloading face from {face_url} to {tmp_face}")
 
-    with open(tmp_video, "wb") as f:
-        f.write(await video.read())
-    with open(tmp_face, "wb") as f:
-        f.write(await face.read())
+    # Download video from URL
+    async with httpx.AsyncClient() as client:
+        video_task = client.get(video_url)
+        face_task = client.get(face_url)
+
+        video_response, face_response = await asyncio.gather(video_task, face_task)
+
+        video_response.raise_for_status()
+        face_response.raise_for_status()
+
+        with open(tmp_video, "wb") as f:
+            f.write(video_response.content)
+
+        with open(tmp_face, "wb") as f:
+            f.write(face_response.content)
 
     # Initialize job status in Redis
     r.hset(f"job:{job_id}", mapping={"status": "processing"})
 
-    celery_app.send_task("tasks.find_me", args=[job_id, tmp_video, tmp_face, video_url, face_url])
+    celery_app.send_task(
+        "tasks.find_me", args=[job_id, tmp_video, tmp_face, video_url, face_url]
+    )
     return {"id": job_id, "status": "processing"}
 
 
 @app.get("/jobs/{job_id}")
 def job_status(job_id: str):
     logger.info(f"Checking status for job {job_id}")
-    job_dict = r.hgetall(f"job:{job_id}")
+    job_dict = cast(dict, r.hgetall(f"job:{job_id}"))
 
     if not job_dict:
         logger.error(f"Job {job_id} not found in Redis")
