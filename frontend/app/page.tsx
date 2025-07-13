@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Shield, Zap, Lock } from "lucide-react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createSupabaseClient } from "@/app/utils/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { UserMenu } from "@/components/user-menu";
@@ -10,7 +10,7 @@ export default function Landing() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
-  const supabase = createClientComponentClient();
+  const supabase = createSupabaseClient();
 
   useEffect(() => {
     setMounted(true);

@@ -1,13 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createSupabaseClient } from "@/app/utils/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function UserMenu() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = createSupabaseClient();
 
   const handleSignOut = async () => {
     setLoading(true);

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createSupabaseClient } from "@/app/utils/client";
 
 const API_URL = "http://localhost:8000"; // Backend API URL
 const NEXT_API_URL = "/api"; // Next.js API routes
@@ -19,7 +19,7 @@ export interface JobStatus {
 
 // Create an axios instance with auth header
 const createAuthenticatedClient = async () => {
-  const supabase = createClientComponentClient();
+  const supabase = createSupabaseClient();
   const { data: { session } } = await supabase.auth.getSession();
   
   if (!session?.access_token) {
@@ -35,7 +35,7 @@ const createAuthenticatedClient = async () => {
 
 /* ---------- create a job ---------- */
 export const startJob = async (video: File, face: File, videoUrl: string, faceUrl: string): Promise<JobStatus> => {
-  const supabase = createClientComponentClient();
+  const supabase = createSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) {

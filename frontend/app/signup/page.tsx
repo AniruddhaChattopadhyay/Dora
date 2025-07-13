@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createSupabaseClient } from "@/app/utils/client";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { FcGoogle } from "react-icons/fc";
@@ -13,7 +13,7 @@ export default function SignUp() {
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = createSupabaseClient();
 
   useEffect(() => {
     setMounted(true);

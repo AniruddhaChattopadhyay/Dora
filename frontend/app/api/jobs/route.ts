@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-// import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-// import { cookies } from 'next/headers';
 import { createSupabaseServerClient } from '@/app/utils/server';
 
 export async function POST(request: Request) {

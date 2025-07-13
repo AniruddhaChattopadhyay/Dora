@@ -1,5 +1,5 @@
 "use client";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createSupabaseClient } from "@/app/utils/client";
 import { User } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import { UserMenu } from "./user-menu";
@@ -8,7 +8,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
-  const supabase = createClientComponentClient();
+  const supabase = createSupabaseClient();
 
   useEffect(() => {
     setMounted(true);
