@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 
 interface Props {
   videoFile: File;
@@ -7,6 +7,23 @@ interface Props {
 
 export default function VideoPlayer({ videoFile, timestamps }: Props) {
   const ref = useRef<HTMLVideoElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const [videoUrl, setVideoUrl] = useState<string>("");
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || !videoFile) return;
+    
+    const url = URL.createObjectURL(videoFile);
+    setVideoUrl(url);
+    
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  }, [mounted, videoFile]);
 
   const jump = (start: number) => {
     if (ref.current) {
@@ -15,11 +32,19 @@ export default function VideoPlayer({ videoFile, timestamps }: Props) {
     }
   };
 
+  if (!mounted) {
+    return (
+      <div className="flex flex-col items-center w-full">
+        <div className="w-full aspect-video bg-gray-200 rounded-xl animate-pulse" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col items-center w-full">
       <video
         ref={ref}
-        src={URL.createObjectURL(videoFile)}
+        src={videoUrl}
         controls
         className="w-full rounded-xl shadow-lg border border-gray-200"
       />

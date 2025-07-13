@@ -9,7 +9,6 @@ export async function POST(request: Request) {
     // const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
-    console.log('user', user);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -51,7 +50,6 @@ export async function GET(request: Request) {
   try {
     const supabase = await createSupabaseServerClient();
     const { data: { user } } = await supabase.auth.getUser();
-    console.log('user', user);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

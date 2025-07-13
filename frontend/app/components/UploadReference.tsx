@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 
 interface UploadReferenceProps {
   onUpload: (file: File, imageUrl: string) => void;
@@ -9,8 +9,15 @@ const UploadReference: React.FC<UploadReferenceProps> = ({ onUpload }) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleFile = async (file: File) => {
+    if (!mounted) return;
+    
     try {
       setIsUploading(true);
       setUploadError(null);
@@ -67,9 +74,32 @@ const UploadReference: React.FC<UploadReferenceProps> = ({ onUpload }) => {
   }, []);
 
   const handleReplace = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
     setPreviewUrl(null);
     setUploadError(null);
   };
+
+  // Cleanup preview URL on unmount
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  if (!mounted) {
+    return (
+      <div className="w-full">
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50 animate-pulse">
+          <div className="h-6 bg-gray-200 rounded mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

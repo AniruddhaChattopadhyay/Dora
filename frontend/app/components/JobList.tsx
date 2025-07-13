@@ -6,8 +6,15 @@ export default function JobList() {
   const [jobs, setJobs] = useState<JobStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    
     const loadJobs = async () => {
       try {
         const userJobs = await fetchUserJobs();
@@ -23,9 +30,9 @@ export default function JobList() {
     // Poll for updates every 10 seconds
     const interval = setInterval(loadJobs, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [mounted]);
 
-  if (loading) {
+  if (!mounted || loading) {
     return <div className="animate-pulse">Loading jobs...</div>;
   }
 

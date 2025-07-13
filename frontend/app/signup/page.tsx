@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FcGoogle } from "react-icons/fc";
 
 export default function SignUp() {
@@ -11,8 +11,13 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const supabase = createClientComponentClient();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +47,8 @@ export default function SignUp() {
   };
 
   const handleGoogleSignUp = async () => {
+    if (!mounted) return;
+    
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",

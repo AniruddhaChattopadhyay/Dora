@@ -9,9 +9,16 @@ import { UserMenu } from "@/components/user-menu";
 export default function Landing() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const supabase = createClientComponentClient();
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
@@ -27,7 +34,7 @@ export default function Landing() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase.auth]);
+  }, [mounted, supabase.auth]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 flex flex-col">
@@ -36,7 +43,7 @@ export default function Landing() {
           <Sparkles className="w-7 h-7 text-blue-500" />
           DORA : Find Faces in Videos
         </span>
-        {loading ? (
+        {!mounted || loading ? (
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500" />
         ) : user ? (
           <UserMenu />
